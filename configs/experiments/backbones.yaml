@@ -1,0 +1,13 @@
+# Items C19-C22, B18: extra backbones (fresh seeds 100+).
+#   maplight  CatBoost on ECFP/Avalon/ErG/RDKit descriptors (top-tier TDC BBB recipe), CPU
+#   gcn       Tursunbadalov's 2-layer GCN, CPU
+#   chemberta frozen ChemBERTa-77M-MTR + logistic head (one-time Hugging Face download)
+#   chemeleon Chemprop initialised from the CheMeleon foundation model (one-time Zenodo download);
+#             ~3-5x slower than Chemprop, so 10 seeds
+#   gin_ens5  5-member GIN deep ensemble; 5x GIN cost, so 5 seeds
+stageB: {profile: full}
+blocks:
+  - {datasets: [bbbp, b3db], regimes: [random, scaffold], models: [maplight, gcn, chemberta], losses: [ce], n_seeds: 20, seed_start: 100}
+  - {datasets: [bbbp], external: b3db, regimes: [scaffold], models: [maplight, gcn, chemberta], losses: [ce], n_seeds: 20, seed_start: 100}
+  - {datasets: [bbbp, b3db], regimes: [random, scaffold], models: [chemeleon], losses: [ce], n_seeds: 10, seed_start: 100}
+  - {datasets: [bbbp, b3db], regimes: [random, scaffold], models: [gin_ens5], losses: [ce], n_seeds: 5, seed_start: 100}

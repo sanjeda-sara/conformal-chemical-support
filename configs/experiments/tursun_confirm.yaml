@@ -1,0 +1,5 @@
+# R2 (2026-10-31): the Tursunbadalov & Tursunbadalov protocol (BBBP all parseable records, random 50/25/25)
+# on confirmatory seeds 100-119.  tursun_repro.yaml used their seeds 0-9 and is kept for the head-to-head only.
+# Stage A only; analysed by scripts/run_generality.py.  GCN needs torch + torch_geometric.
+blocks:
+  - {datasets: [bbbp_raw], regimes: [random5025], models: [rf, gcn], losses: [ce], n_seeds: 20, seed_start: 100}

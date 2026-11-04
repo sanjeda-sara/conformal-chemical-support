@@ -1,0 +1,5 @@
+setting,definition,n_eligible,n_conflict,n_fail,fail_conflict,rate_fail,rate_rest,fisher_p,conflicting_failures
+b3db/random,strict,1149,33,10,1,0.1,0.028094820017559263,0.25366144720302625,cyclobenzaprine hydrochloride
+b3db/random,majority,1149,33,42,2,0.047619047619047616,0.028003613369467027,0.34189806184028504,cyclobenzaprine hydrochloride; physostigmine
+b3db/scaffold,strict,1199,38,14,2,0.14285714285714285,0.030379746835443037,0.07004322506856614,cyclobenzaprine hydrochloride; phenylbutazone
+b3db/scaffold,majority,1199,38,55,3,0.05454545454545454,0.030594405594405596,0.25116633294578095,cyclobenzaprine hydrochloride; phenylbutazone; cortisone

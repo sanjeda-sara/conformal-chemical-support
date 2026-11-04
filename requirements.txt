@@ -1,0 +1,13 @@
+# Versions used for the executed pilot (Python 3.13, CPU).  Newer patch versions should work.
+numpy==2.5.3
+pandas==3.0.5
+scipy==1.18.1
+scikit-learn==1.9.1
+rdkit==2026.03.6
+matplotlib>=3.9
+pyyaml>=6.0
+pytest>=8
+torch==2.14.1          # GIN; CPU, CUDA or Apple MPS
+torch_geometric==2.8.0.post1
+chemprop==2.3.1        # D-MPNN baseline (pulls lightning 2.6)
+catboost==1.2.10       # MapLight backbone (v1.3)

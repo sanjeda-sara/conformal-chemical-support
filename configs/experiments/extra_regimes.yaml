@@ -1,0 +1,9 @@
+# Items D24, D25, E39: comparability splits and more shift regimes.
+#   scaffold_det  MoleculeNet deterministic scaffold split (one split: seed ignored, so 1 seed)
+#   butina0.4/0.6 Butina cluster holdout at two Tanimoto-distance thresholds (empirical only)
+#   tdc_scaffold  TDC BBB_Martins with TDC's scaffold-split function (seeds 1-5 as on TDC)
+stageB: {profile: full}
+blocks:
+  - {datasets: [bbbp], regimes: [scaffold_det], models: [rf, gin, chemprop], losses: [ce], n_seeds: 1, seed_start: 0}
+  - {datasets: [bbbp, b3db], regimes: [butina0.4, butina0.6], models: [rf, chemprop], losses: [ce], n_seeds: 20, seed_start: 100}
+  - {datasets: [tdc_bbb_martins], regimes: [tdc_scaffold], models: [rf, chemprop, maplight], losses: [ce], n_seeds: 5, seed_start: 1}

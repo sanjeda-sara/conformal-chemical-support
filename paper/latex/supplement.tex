@@ -1,0 +1,333 @@
+\documentclass[10pt]{article}
+\input{preamble}
+\input{generated/numbers}
+\usepackage[section]{placeins}
+\graphicspath{{figures/}{../../figures/}}
+% A missing key prints in red and writes 'Package numbers Warning: Number key ... undefined' to the log.
+\newcommand{\V}[1]{\ifcsname v@#1\endcsname\csname v@#1\endcsname\else\textcolor{red}{??\detokenize{#1}}\PackageWarning{numbers}{Number key `\detokenize{#1}' undefined}\fi}
+\renewcommand{\thesection}{\Alph{section}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\thealgocf}{S\arabic{algocf}}
+\renewcommand{\theproposition}{S\arabic{proposition}}
+\renewcommand{\thetheorem}{S\arabic{theorem}}
+\renewcommand{\thecorollary}{S\arabic{corollary}}
+
+\title{Supplementary Material\\[0.3em]\large Class-conditional conformal prediction masks chemical-support undercoverage in blood-brain barrier screening}
+\author{Sanjeda Sara Jennifer \and Niloofar Yousefi}
+\date{}
+\begin{document}
+\maketitle
+\noindent All results use the confirmatory split seeds 100--119; pilot seeds are not reported. Tables in this supplement are generated directly from the analysis outputs by \path{scripts/make_supplement_tables.py}; numbers quoted in the main text are additionally recomputed by an independent program (Section~\ref{sec:verify}).
+
+\tableofcontents
+
+% =====================================================================
+\section{Theory}\label{sec:proofs}
+This section collects every formal statement used in the paper, with complete proofs, and separates exact results from design choices (Table~\ref{tab:exact}). None of the statements is a new conformal method; Propositions~\ref{prop:S-shared}--\ref{prop:S-band} and Corollary~\ref{cor:S-cell} make precise why the class-conditional guarantee leaves a support gradient, why conditioning on support removes it by redistribution, and how much of that change finite-sample conservativeness alone can produce.
+
+\textbf{Notation.} $Y\in\{0,1\}$ with class $0$ = BBB$-$ (the minority); LAC score $s(x,y)=1-\hat p_y(x)$; the model $\hat f$ is fit on TRAIN and selected on VAL. The stratum map $b$ assigns VAL-quantile bins of maximal Tanimoto support $s_{\max}$, so $b$ is fixed before CAL and TEST are used. $w_{c,b}=\Prob(b(X)=b\mid Y=c)$; $\cov_c=\Prob(Y\in C(X)\mid Y=c)$ and $\cov_{c,b}=\Prob(Y\in C(X)\mid Y=c,b(X)=b)$, where probabilities are over CAL and the test point, conditional on TRAIN and VAL. $k_n=\lceil(n+1)(1-\alpha)\rceil$.
+\textbf{Assumption E} (main-text Assumption~1): CAL $\cup\{(X_{n+1},Y_{n+1})\}$ is exchangeable given TRAIN $\cup$ VAL. \textbf{Assumption I}: CAL and the test point are i.i.d.\ given TRAIN $\cup$ VAL (implies E). \textbf{Assumption C}: given the class (and stratum), scores have a continuous distribution, so ties occur with probability zero. E holds for random splits; I and C are used only where stated, and every guarantee is claimed for random splits only.
+
+\subsection{What a class-level guarantee permits}
+\begin{proposition}[Stratum floor; main-text Proposition~1]\label{prop:S-floor}
+If $\cov_c\ge1-\alpha$, then $\cov_{c,b}\ge\max(0,1-\alpha/w_{c,b})$ for every $b$ with $w_{c,b}>0$, and the bound is attained by a class-conditionally valid predictor.
+\end{proposition}
+\begin{proof}
+By total probability, $\cov_c=\sum_{b'}w_{c,b'}\cov_{c,b'}$. Since each $\cov_{c,b'}\le1$, $w_{c,b}\cov_{c,b}\ge\cov_c-\sum_{b'\neq b}w_{c,b'}\ge1-\alpha-(1-w_{c,b})$; divide by $w_{c,b}$, and coverage is non-negative. For attainment with $w_{c,b}\ge\alpha$, include $c$ with probability one when $b(x)\neq b$ and independently with probability $1-\alpha/w_{c,b}$ when $b(x)=b$: then $\cov_{c,b}=1-\alpha/w_{c,b}$ and $\cov_c=(1-w_{c,b})+w_{c,b}-\alpha=1-\alpha$. If $w_{c,b}<\alpha$, exclude $c$ in $b$: $\cov_{c,b}=0$ and $\cov_c=1-w_{c,b}>1-\alpha$.
+\end{proof}
+The floor depends on the measured class share of the stratum, not on $1/B$. The BBB$-$ share of the low-support tertile is \V{w.bbbp/random}, \V{w.bbbp/scaffold}, \V{w.b3db/random} and \V{w.b3db/scaffold} (BBBP random, BBBP scaffold, B3DB random, B3DB scaffold), giving floors of \V{floor.bbbp/random}, \V{floor.bbbp/scaffold}, \V{floor.b3db/random} and \V{floor.b3db/scaffold} at $\alpha=0.1$. Observed class-conditional low-support coverage, \V{mond.low.min}--\V{mond.low.max}, lies far above these floors: the guarantee permits a much larger failure than occurs.
+
+\subsection{Why a shared class threshold produces a support gradient}
+Proposition~\ref{prop:S-floor} says a failure is permitted; the next statement says when it must occur and in which direction. Let $F_{c,b}(t)=\Prob(s(X,c)\le t\mid Y=c,\,b(X)=b)$ be the distribution function of class-$c$ scores in stratum $b$ (given TRAIN and VAL), and $\hat q_c$ the class-conditional threshold computed from the class-$c$ calibration scores.
+
+\begin{proposition}[Coverage under a shared threshold; main-text Proposition~2]\label{prop:S-shared}
+Under Assumptions I and C, class-conditional calibration gives
+\[\cov_{c,b}=\mathbb E\big[F_{c,b}(\hat q_c)\big]\qquad\text{for every stratum }b.\]
+(a) If $F_{c,b}(t)\le F_{c,b'}(t)$ for all $t$ (scores in $b$ stochastically larger), then $\cov_{c,b}\le\cov_{c,b'}$.
+(b) If the strata are so ordered, $F_{c,1}\le F_{c,2}\le\dots\le F_{c,B}$, then $\cov_{c,1}\le\cov_c\le\cov_{c,B}$; in particular, whenever the least supported stratum is under-covered, the best supported stratum is over-covered.
+(c) An ordering of mean scores, $\mathbb E[s\mid c,b]\ge\mathbb E[s\mid c,b']$, does not imply $\cov_{c,b}\le\cov_{c,b'}$.
+\end{proposition}
+\begin{proof}
+Under I, the test point is independent of CAL given TRAIN and VAL, and $\hat q_c$ is a function of CAL. Conditioning on CAL and on $\{Y=c,b(X)=b\}$, the test point is covered iff $s(X,c)\le\hat q_c$, which has probability $F_{c,b}(\hat q_c)$; averaging over CAL gives the identity. (a) follows because the integrand is pointwise ordered. (b) follows from (a) and $\cov_c=\sum_bw_{c,b}\cov_{c,b}$, a convex combination. For (c), let $s\mid b\sim\mathrm{Uniform}(0,1)$ and let $s\mid b'$ take the value $0.05$ with probability $0.8$ and $0.95$ with probability $0.2$ (smoothed slightly to satisfy C). Stratum $b$ has the larger mean score ($0.50$ against $0.23$), yet at a shared threshold $\hat q_c=0.9$, $F_{c,b}(0.9)=0.9>0.8=F_{c,b'}(0.9)$, so $b$ is the better covered stratum.
+\end{proof}
+\noindent\textbf{Link to the measurements.} The mechanism analysis (Table~\ref{tab:mech}, Fig.~\ref{fig:mech}) measures the mean true-class probability $1-\mathbb E[s\mid c,b]$ by tertile, a summary of $F_{c,b}$. A larger drop for BBB$-$ than for BBB$+$ in every BBB cell, together with the observed coverage ordering, is what part (a) predicts when the drop reflects a stochastic shift. Part (c) explains why the same mean drop on Tox21 SR-ARE does not produce the gradient (main text, Section~6.9): the relevant quantity is the mass of each stratum's score distribution below the shared threshold, not its mean. The reliability diagram (Fig.~\ref{fig:rel}) shows the corresponding calibration shift on B3DB: at a fixed predicted probability, low-support compounds are BBB$-$ more often.
+
+\subsection{Joint conditioning: what it guarantees and what it costs}
+\begin{proposition}[Cell coverage band]\label{prop:S-band}
+Fix a partition of strata determined before CAL and TEST are used. Under E and C, for a (class, stratum) cell with $n$ calibration points and $k_n\le n$, class $\times$ support calibration gives $\cov_{c,b}=k_n/(n+1)$ in expectation over CAL, hence
+\[1-\alpha\ \le\ \cov_{c,b}\ <\ 1-\alpha+\frac{1}{n+1}.\]
+If $k_n>n$ the cell's threshold is infinite, so label $c$ is always included for test points in stratum $b$ and $\cov_{c,b}=1$.
+\end{proposition}
+\begin{proof}
+Within the cell, the $n$ calibration scores and the test score are exchangeable and almost surely distinct, so the rank of the test score among the $n+1$ is uniform on $\{1,\dots,n+1\}$. The test point is covered iff its rank is at most $k_n$, which has probability $k_n/(n+1)$. Since $(n+1)(1-\alpha)\le k_n<(n+1)(1-\alpha)+1$, the band follows.
+\end{proof}
+\noindent\textbf{Consequence: redistribution.} Under class-conditional calibration, Proposition~\ref{prop:S-shared}(b) forces the best supported stratum above target whenever the worst is below it, and nothing bounds that over-coverage. Under class $\times$ support calibration, Proposition~\ref{prop:S-band} places every cell, in expectation, between $1-\alpha$ and $1-\alpha+1/(n+1)$: low-support coverage is raised to at least $1-\alpha$, and over-coverage above that cap is removed. This is a property of joint conditioning, not a conservation law that holds for every method. In our data high-support BBB$-$ coverage moves from \V{mond.high.min}--\V{mond.high.max} to \V{mx.high.min}--\V{mx.high.max}, and its interval lies entirely below 0.90 in \V{mx.high.nciexcl} of 12 cells, consistent with the band, which is guaranteed only for random splits.
+
+\begin{corollary}[How much smaller cells alone can change coverage]\label{cor:S-cell}
+Split class $c$ into $B$ strata assigned independently of $(X,Y)$ given the class, with $n_1,\dots,n_B$ calibration points ($\sum n_r=n$, each $k_{n_r}\le n_r$). Under E and C, the expected class-level coverage is $\sum_r\pi_r\,k_{n_r}/(n_r+1)$, with $\pi_r$ the stratum probabilities. Its difference from class-conditional calibration, $k_n/(n+1)$, lies strictly between $-1/(n+1)$ and $\max_r1/(n_r+1)$. The difference can be negative, because $k_n$ is an integer: at $\alpha=0.1$, $n=27$ gives $26/28$, whereas three random cells of nine give $9/10$. With three equal strata, any increase is below $1/(n/3+1)$.
+\end{corollary}
+\begin{proof}
+Random assignment makes each random cell an exchangeable sample of the class, so Proposition~\ref{prop:S-band} applies cell by cell. Each cell's expected coverage lies in $[1-\alpha,\,1-\alpha+1/(n_r+1))$, so their mixture does too, and class-conditional coverage lies in $[1-\alpha,\,1-\alpha+1/(n+1))$; subtracting gives both bounds.
+\end{proof}
+\noindent\textbf{Check against the same-cell-size control.} For the realized minority calibration sizes, $1/(n/3+1)$ is \V{th.csb.bbbp.min}--\V{th.csb.bbbp.max} on BBBP and \V{th.csb.b3db.min}--\V{th.csb.b3db.max} on B3DB. Randomly assigned strata raise low-support BBB$-$ coverage by \V{rs.cellsize.low.bbbp.min}--\V{rs.cellsize.low.bbbp.max} on BBBP and \V{rs.cellsize.low.b3db.min}--\V{rs.cellsize.low.b3db.max} on B3DB (Table~\ref{tab:randstrata}). The corollary bounds the class-level change, not the change on a support subset, so this is a check of scale rather than a bound; the observed changes are of the predicted size and smaller on the dataset with more calibration data, whereas class $\times$ Tanimoto cells raise low-support coverage by \V{rs.gain.min}--\V{rs.gain.max} beyond random strata.
+
+\subsection{Count-based merging}
+\begin{algorithm}[h]
+\caption{Count-based merging (\SABM) for a test molecule $x$. Brackets name the data each step may use.}\label{alg:sabm}
+\small
+\KwIn{scores $s_i$, labels $y_i$, strata $b_i$ of CAL [CAL]; stratum edges [VAL]; model $\hat f$ [TRAIN, VAL]; level $\alpha$; budget $\nreq$ fixed in advance}
+\For{each candidate label $c\in\{0,1\}$}{
+ $N_\beta\leftarrow\#\{i\in\mathrm{CAL}:y_i=c,\,b_i=\beta\}$ for $\beta=1,\dots,B$; \quad $N_{b(x)}\leftarrow N_{b(x)}+1$ \tcp*{bag counts [CAL, $x$; no test label]}
+ Traverse $\beta=1,\dots,B$ from low to high support, closing a group when its accumulated count reaches $\nreq$; merge a deficient final group into the preceding one \tcp*{counts only}
+ $g\leftarrow$ group containing $b(x)$; $m\leftarrow\#\{i:y_i=c,\,b_i\in g\}$; $\hat q\leftarrow$ the $\lceil(m+1)(1-\alpha)\rceil$-th smallest of $\{s_i:y_i=c,\,b_i\in g\}$, or $+\infty$ if $\lceil(m+1)(1-\alpha)\rceil>m$ [CAL]\;
+ include $c$ in $C(x)$ if and only if $s(x,c)\le\hat q$ [TEST $x$ only]\;
+}
+\end{algorithm}
+
+\begin{theorem}[Class- and group-conditional validity; main-text Theorem~1]\label{thm:S}
+Let $\Gamma_c$ be the partition computed for candidate label $c$ from the bag of calibration and test points (Algorithm~\ref{alg:sabm}, lines 2--3). Under Assumption E, for every class $c$, partition $\gamma$ and group $g\in\gamma$ with $\Prob(Y=c,\Gamma_c=\gamma,b(X)\in g)>0$, $\Prob(Y\in C(X)\mid Y=c,\ \Gamma_c=\gamma,\ b(X)\in g)\ge1-\alpha$; consequently $\cov_c\ge1-\alpha$.
+\end{theorem}
+\begin{proof}
+Let $\mathcal B$ be the multiset of the $n+1$ points CAL $\cup\{(X_{n+1},Y_{n+1})\}$. \emph{Bag symmetry.} On $\{Y_{n+1}=c\}$, the counts formed in line 2 for candidate $c$ equal the class-$c$ stratum counts of $\mathcal B$, and the merge in line 3 depends only on these counts; hence $\Gamma_c$ is a function of $\mathcal B$, and whichever class-$c$ point of $\mathcal B$ occupies the test position, the same $\Gamma_c$ results. \emph{Conditioning.} Fix a bag value with $\Gamma_c=\gamma$ and a group $g\in\gamma$, and let $M$ be the number of class-$c$ points of $\mathcal B$ with stratum in $g$; the calibration count is $m=M-1$. By exchangeability, conditional on $\mathcal B$ the test point is uniformly distributed over the elements of $\mathcal B$; conditional additionally on $\{Y_{n+1}=c,\ b(X_{n+1})\in g\}$, it is uniformly distributed over these $M$ points, each of which would be assigned to group $g$. \emph{Rank argument.} Let $R$ be the rank of the test score among the $M$ scores, ties broken uniformly at random, so $R$ is uniform on $\{1,\dots,M\}$. With $k=\lceil M(1-\alpha)\rceil=\lceil(m+1)(1-\alpha)\rceil$: if $k\le m$, the test point is covered whenever $R\le k$, because its score then does not exceed the $k$-th smallest of the other $m$ scores, so the conditional coverage is at least $k/M\ge1-\alpha$; if $k>m$, $\hat q=+\infty$ and coverage is one. \emph{Integration.} On $\{Y_{n+1}=c\}$ the event $\{\Gamma_c=\gamma\}$ is a union of bag values, so integrating the bag-conditional bound over those bags gives the group statement; averaging over groups with weights $\Prob(\Gamma_c=\gamma,b(X)\in g\mid Y=c)$ gives $\cov_c\ge1-\alpha$.
+\end{proof}
+
+\begin{remark}[Three limits of Theorem~\ref{thm:S}]\label{rem:S-limits}
+(i) \emph{Groups, not strata.} The conditioning event is the realized merged group. When strata merge, one constituent stratum can be under-covered while another compensates, exactly as Proposition~\ref{prop:S-floor} allows one level up; per-stratum validity belongs to fixed class $\times$ support calibration, and to merging only where it does not merge. All low-support results in the paper are reported per original stratum. (ii) \emph{The budget is met by the bag.} A group closes when its bag count reaches $\nreq$, so a single-stratum group can hold only $\nreq-1$ calibration points; the tolerance statement below applies at $n\ge\nreq$. The constant $\nreq$ was frozen on 9 October 2026; only this wording is made precise. (iii) \emph{Exchangeability.} The guarantee needs Assumption E and is claimed for random splits only.
+\end{remark}
+
+\subsection{Calibration budget and the design rule}
+For i.i.d.\ data with continuous scores, the coverage of a cell with $n$ calibration points, conditional on those points, is a random quantity whose distribution over calibration draws is $\Beta(k_n,n+1-k_n)$~\cite{vovk2012conditional}. Before the confirmatory runs we fixed
+\[\nreq(\alpha,\epsilon,\delta)=\min\big\{n_0:\ \forall n\ge n_0,\ \Prob\big(\Beta(k_n,n+1-k_n)<1-\alpha-\epsilon\big)\le\delta\big\},\qquad\epsilon=\alpha,\ \delta=0.1 .\]
+The minimum over all $n\ge n_0$ is needed because $k_n$ jumps and the tail probability is not monotone in $n$. Table~\ref{tab:nreq} contrasts it with the finite-threshold condition $k_n\le n$.
+\begin{table}[h]\centering\small
+\caption{\textbf{Two calibration-size thresholds.} Finite threshold: smallest $n$ with $k_n\le n$. $\nreq$: tolerance rule above (with probability at least $1-\delta=0.9$ over calibration draws, realized cell coverage is at least $1-2\alpha$).}\label{tab:nreq}
+\begin{tabular}{ccc}\toprule
+$\alpha$ & finite threshold & $\nreq$\\\midrule
+0.05 & 19 & 22\\ 0.10 & 9 & 11\\ 0.20 & 4 & 5\\\bottomrule
+\end{tabular}\end{table}
+It is a tolerance rule, not a certificate of $1-\alpha$ conditional coverage. Dividing the minority calibration set among $B$ strata gives the planning heuristic $B\le n^{-}_{\mathrm{cal}}/\nreq(\alpha)$. It assumes roughly equal strata and does not guarantee that every stratum of a given split reaches $\nreq$; Fig.~\ref{fig:feas} shows that the fraction of cells with an infinite threshold is about one half when strata hold only a few minority calibration molecules and falls steeply as they approach and exceed $\nreq$, for 2, 3, 5 and 8 strata alike, which is what the heuristic predicts.
+
+\begin{figure}[h]\centering
+\includegraphics[width=0.62\linewidth]{supp_feasibility.pdf}\\[0.6em]
+{\small\input{generated/T_feas}}
+\caption{\textbf{Feasibility of fixed class $\times$ support partitions} against minority calibration molecules per stratum (BBB$-$ calibration subsampled, 10 draws per split, majority retained; LAC, $\alpha=0.1$, CE; mean over setting $\times$ backbone cells in which the size is reachable in all 20 splits). Dotted: finite-threshold condition; dashed: $\nreq=11$. Table: the plotted values; parentheses, BBB$-$ calibration molecules per stratum; last row, the realized calibration sets without subsampling.}\label{fig:feas}
+\end{figure}
+
+\subsection{Exact invariances}
+\begin{proposition}[Invariance to post-hoc per-class recalibration]\label{prop:S-inv}
+If $\hat p'_y=h_y(\hat p_y)$ with each $h_y$ strictly increasing, class-conditional and class $\times$ support LAC prediction sets are unchanged; marginal LAC sets are in general changed.
+\end{proposition}
+\begin{proof}
+Within class $y$, all calibration and test LAC scores are transformed by the same strictly increasing map $u\mapsto1-h_y(1-u)$, which preserves their order. Each per-class or per-cell threshold is an order statistic of class-$y$ scores, and membership is the comparison $s(x,y)\le\hat q_y$, which the common map preserves. A marginal threshold is an order statistic of scores of both classes, transformed by different maps, so the ordering between classes, and hence the threshold, can change.
+\end{proof}
+\noindent\textbf{Remark.} For a binary model, temperature scaling applies the same increasing map to the logit of both classes, so $h_1(p)=1-h_0(1-p)$ and both classes' LAC scores share one map; marginal sets are then unchanged as well. Logit adjustment shifts the two classes differently. Empirically (Stage B rows, 12 in-domain cells), temperature scaling and logit adjustment change class-conditional, class $\times$ support and merged sets by at most \V{inv.ts.max} and \V{inv.la.max} in any endpoint, the nonzero value being a set-size difference caused by ties among probabilities stored in single precision near 1; marginal sets change by at most \V{inv.marginal_ts.max} under temperature scaling and by up to \V{inv.marginal_la.cov} in BBB$-$ coverage and \V{inv.marginal_la.low} in low-support BBB$-$ coverage under logit adjustment.
+
+\begin{proposition}[Margin and LAC coincide for binary tasks]\label{prop:S-margin}
+For $K=2$, the margin score $\max_{y'\neq y}\hat p_{y'}-\hat p_y=1-2\hat p_y=2s_{\mathrm{LAC}}(x,y)-1$, a strictly increasing affine function of LAC common to both labels; every calibrator whose threshold is an order statistic of scores therefore returns identical sets.
+\end{proposition}
+
+\subsection{Exact results versus design choices, and relation to prior theory}
+\begin{table}[h]\centering\small
+\caption{\textbf{Status of each formal statement.}}\label{tab:exact}
+\begin{tabular}{p{0.36\linewidth}p{0.2\linewidth}p{0.34\linewidth}}\toprule
+Statement & Status & Scope\\\midrule
+Stratum floor (Prop.~\ref{prop:S-floor}) & exact & any class-conditionally valid predictor\\
+Shared-threshold coverage (Prop.~\ref{prop:S-shared}) & exact & I, C; ordering needs stochastic dominance\\
+Cell coverage band (Prop.~\ref{prop:S-band}) & exact & fixed partition; E, C\\
+Cell-size change (Cor.~\ref{cor:S-cell}) & exact two-sided bound & class level; random strata\\
+Merging validity (Thm.~\ref{thm:S}) & exact & realized merged groups; E\\
+Beta law & exact~\cite{vovk2012conditional} & i.i.d., continuous scores; over calibration draws\\
+$\nreq$ and $B\le n^{-}_{\mathrm{cal}}/\nreq$ & design choice & tolerance $\epsilon=\alpha$, $\delta=0.1$; heuristic\\
+Invariances (Props.~\ref{prop:S-inv}, \ref{prop:S-margin}) & exact & LAC; binary for the margin\\\bottomrule
+\end{tabular}\end{table}
+No informative method can guarantee distribution-free coverage conditional on every subgroup~\cite{barber2021limits}, so practical methods condition on a finite taxonomy, and a subgroup outside it can be under-covered. That result does not identify the subgroup or the direction. Proposition~\ref{prop:S-shared} does so when scores are stochastically ordered across strata: the stratum with stochastically largest scores is the under-covered one. In these data a pre-assay covariate (support) identifies the under-covered subgroup, and Proposition~\ref{prop:S-band} shows that joint conditioning on it removes the gradient at a cost bounded cell by cell. Clustered~\cite{ding2023clustered}, Kandinsky~\cite{bairaktari2025kandinsky}, interpolated~\cite{ding2026longtail}, localized~\cite{guan2023lcp,hore2025rlcp} and function-class-conditional~\cite{gibbs2025conditional} methods choose or relax the taxonomy differently; Section~\ref{sec:mech} compares them on the same predictions.
+
+% =====================================================================
+\section{Data, splits and models}\label{sec:data}
+\textbf{Curation.} SMILES were standardized (largest organic fragment, neutralization, canonical isomeric SMILES), de-duplicated by InChIKey with conflicting-label groups removed, and stereoisomer families sharing a connectivity key collapsed to one record when labels agreed and removed otherwise. This gives \V{data.bbbp.n} BBBP molecules (\V{data.bbbp.minfrac}\% BBB$-$) and \V{data.b3db.n} B3DB molecules (\V{data.b3db.minfrac}\% BBB$-$). The external transfer set contains the \V{data.transfer.n} B3DB molecules whose connectivity key does not occur in BBBP (\V{data.transfer.nmin} BBB$-$).
+
+\textbf{Splits.} TRAIN/VAL/CAL/TEST fractions are 60/10/15/15\%. Random splits permute molecules uniformly. Balanced scaffold splits assign Bemis-Murcko scaffold groups at random, with large groups placed in TRAIN and acyclic molecules treated as singleton groups. Cluster holdout withholds whole $k$-means clusters of ECFP4 fingerprints ($k=20$) as TEST. Transfer trains and calibrates on BBBP scaffold splits and tests on the external set. No split function receives labels.
+
+\textbf{Support.} $s_{\max}$ is the maximal Tanimoto similarity of 2048-bit ECFP4 fingerprints (radius 2) to TRAIN, computed per split for VAL, CAL and TEST. Stratum edges are VAL quantiles. The CAL-edge variant is reported in Table~\ref{tab:rs}.
+
+\textbf{Models.} Random forest: 500 trees, $\sqrt{d}$ features, ECFP4 input. GIN: 5 layers, 128 hidden units, dropout 0.5, learning rate $10^{-3}$, weight decay $10^{-5}$, up to 60 epochs with patience 15 on VAL AUROC. Chemprop v2 D-MPNN: default bond message passing, mean aggregation, batch normalization, up to 40 epochs with patience 10 on VAL loss. wCE uses inverse class-frequency weights.
+
+\textbf{Predictive performance.} Table~\ref{tab:perf} reports the held-out discrimination of each backbone, so that the coverage results can be read against model competence.
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Predictive performance on TEST} (mean and SD over 20 splits, CE). AUPRC and recall refer to the BBB$-$ class; balanced accuracy and recall use the argmax decision.}\label{tab:perf}
+\resizebox{\linewidth}{!}{\input{generated/S_perf}}
+\end{table}
+
+\textbf{Pre-specification.} The primary family (endpoint, operating point, settings, backbones, three contrasts, Holm over 36) was fixed in a dated amendment to the statistical analysis plan on 21 October 2026, before the confirmatory Stage B outputs were analysed; $\nreq$ was frozen on 9 October 2026, before the confirmatory seeds were run.
+
+% =====================================================================
+\section{Additional results}\label{sec:more}
+\textbf{Construction of main-text Figure 1.} The figure is generated by \path{scripts/make_fig1_overview.py} as an editable diagrams.net file from the confirmatory caches, and every value it shows is recomputed by the independent verifier. \emph{Setting.} For each of the twelve setting $\times$ backbone cells we took the mean high-minus-low BBB$-$ coverage gap under class-conditional calibration (LAC, $\alpha=0.1$, CE; \V{fig1.sel.gap12.low}--\V{fig1.sel.gap12.high}) and selected the lower median among the six random-split cells, where exchangeability holds and the panels can be read against Section~\ref{sec:proofs}: \V{fig1.sel.label}, gap \V{fig1.sel.gap}. The lower median of all twelve cells, \V{fig1.all12.label} (gap \V{fig1.sel.all12.gap}), lies in BBBP scaffold, the one setting in which the primary repair is not significant, so it would illustrate a correction that the paper does not claim. The rule was fixed after the confirmatory results were known; the figure is an illustration, not additional evidence. \emph{Panel B.} Each BBB$-$ test appearance is shown as its score minus the class-conditional threshold of its own split, so that zero is the applicable threshold for every point; no single raw threshold is drawn across splits, and the vertical axis spans the full range 0 to 1. The \V{fig1.B.n.low}, \V{fig1.B.n.mid} and \V{fig1.B.n.high} low-, mid- and high-support appearances come from \V{fig1.B.nmol.low}, \V{fig1.B.nmol.mid} and \V{fig1.B.nmol.high} distinct molecules; they are not independent, and the pooled curves are descriptive only (all inference in the paper is over splits). Of the pooled appearances, \V{fig1.B.excl.low}\%, \V{fig1.B.excl.mid}\% and \V{fig1.B.excl.high}\% lie above the threshold; one minus split-mean coverage in panel A gives \V{fig1.A.excl.low}\%, \V{fig1.A.excl.mid}\% and \V{fig1.A.excl.high}\%. The two differ by at most 0.1 percentage point, because pooling weights each split by its number of test appearances, and agree at the whole-percent precision printed in the panel. The panel restates the coverage arithmetic of Proposition~\ref{prop:S-shared} on these data; it does not identify why low-support compounds receive higher scores. Measured from the class threshold, the low-support class $\times$ support threshold lies between \V{fig1.B.shift.low.min} and \V{fig1.B.shift.low.max} and the high-support one between \V{fig1.B.shift.high.min} and \V{fig1.B.shift.high.max}; the low stratum has \V{fig1.B.ncal.low.min}--\V{fig1.B.ncal.low.max} BBB$-$ calibration compounds per split. Switching to class $\times$ support calibration covers \V{fig1.B.rescued} BBB$-$ test appearances that class-conditional calibration excluded (\V{fig1.B.rescued.low} low, \V{fig1.B.rescued.mid} mid, \V{fig1.B.rescued.high} high support) and excludes \V{fig1.B.lost} that it covered (\V{fig1.B.lost.low} low, \V{fig1.B.lost.mid} mid, \V{fig1.B.lost.high} high), the redistribution of Propositions~\ref{prop:S-shared} and~\ref{prop:S-band} seen in individual compounds. \emph{Example pair.} Among BBB$-$ test compounds in the low-support tertile at every appearance, we took the one with the most splits in which it is excluded under class-conditional and included under class $\times$ support calibration (ties: more appearances, then identifier). This is halofantrine: our identifier \V{fig1.mol.id}, B3DB record \V{fig1.mol.no} (``halofantrine hydrochloride'', PubChem CID \V{fig1.mol.cid}, BBB$-$, evidence group C, \V{fig1.mol.nref} reference), absent from BBBP. It is excluded and then included in \V{fig1.mol.rescued} of its \V{fig1.mol.n} test appearances, with maximal similarity to TRAIN \V{fig1.mol.smax.min}--\V{fig1.mol.smax.max} in all of them. In split \V{fig1.mol.seed}, the first such split, its BBB$-$ score is \V{fig1.mol.score} against a class threshold of \V{fig1.mol.qclass} (difference \V{fig1.mol.excess}) and a low-support threshold of \V{fig1.mol.qstratum}, set by \V{fig1.mol.ncal} BBB$-$ calibration compounds. Its most similar TRAIN compound in that split is B3DB record \V{fig1.nn.no}, 4-chlorobenzotrifluoride (our \V{fig1.mol.nn_id}, CID \V{fig1.nn.cid}, BBB$+$), at Tanimoto \V{fig1.mol.smax} on RDKit Morgan fingerprints of radius 2 and 2048 bits, the fingerprint that defines support; the next most similar TRAIN compound is at \V{fig1.nn.sim2}. The pair is drawn in the design strip with native bonds and atom labels from RDKit 2D coordinates. Halofantrine is not marked in panel B, because a point \V{fig1.mol.excess} from the threshold would be visually indistinguishable from the threshold itself.
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Per-cell coverage with 95\% intervals over 20 splits} (LAC, $\alpha=0.1$, CE). $n^{-}_{\mathrm{cal}}$, $n^{-}_{\mathrm{test}}$, $n^{-}_{\mathrm{low}}$: mean BBB$-$ calibration, test and low-support test counts per split. C$\times$S: class $\times$ support.}\label{tab:cells}
+\resizebox{\linewidth}{!}{\input{generated/S_cells}}
+\end{table}
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Pre-specified primary family} (36 tests). $\Delta$: mean paired difference in low-support BBB$-$ coverage; seed CI: bootstrap over splits; $p$: Wilcoxon signed-rank; Holm$_{36}$: Holm-adjusted over the 36 tests. Molecule CI and Holm$_{\mathrm{mol}}$, Holm$_{\mathrm{scaf}}$: bootstrap over unique test molecules or scaffolds (\V{boot.B} draws, calibration fixed), Holm over 36.}\label{tab:primary}
+\resizebox{\linewidth}{!}{\input{generated/S_primary}}
+\end{table}
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Empirical settings} (LAC, $\alpha=0.1$, CE; mean over 20 splits). No finite-sample guarantee applies.}\label{tab:shift}
+\resizebox{\linewidth}{!}{\input{generated/S_shift}}
+\end{table}
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Score and level sensitivity.} Low-support BBB$-$ coverage, mean (range) over the 12 in-domain cells (six random-split and six scaffold-split), CE.}\label{tab:rsc}
+\input{generated/S_robust_scores}
+\end{table}
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Second Mondrian dimension.} Low-support BBB$-$ coverage evaluated on the common VAL tertiles and mean set size, over the 12 in-domain cells (six random-split and six scaffold-split) (LAC, $\alpha=0.1$, CE).}\label{tab:rs}
+\input{generated/S_robust_support}
+\end{table}
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Same-cell-size control} (exploratory). Low- and high-support BBB$-$ coverage under class-conditional calibration, class $\times$ randomly assigned strata of equal size, and class $\times$ Tanimoto tertiles (C$\times$S), with mean set sizes; paired difference in low-support coverage, seed bootstrap interval, and Holm-adjusted Wilcoxon $p$ over the 12 cells. LAC, $\alpha=0.1$, CE, 20 splits.}\label{tab:randstrata}
+\resizebox{\linewidth}{!}{\input{generated/S_randstrata}}
+\end{table}
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Common evaluation grid.} Every partition scored on the lowest VAL tertile (low-tertile cov.) and on the worst VAL sextile with at least five BBB$-$ molecules; BBB$-$ calibration subsampled (10 draws per split), majority retained; LAC, $\alpha=0.1$, CE. Cells: setting $\times$ backbone combinations reachable in all 20 splits. Degenerate: fraction of (class, stratum) cells with an infinite threshold.}\label{tab:grid}
+\resizebox{\linewidth}{!}{\input{generated/S_grid}}
+\end{table}
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Training loss.} Marginal BBB$-$ coverage, class-conditional low-support coverage and class-conditional set size under CE and wCE (LAC, $\alpha=0.1$).}\label{tab:loss}
+\input{generated/S_loss}
+\end{table}
+
+% =====================================================================
+\section{Mechanism and existing conditional methods (exploratory)}\label{sec:mech}
+\textbf{Existing methods.} Table~\ref{tab:condbase} evaluates published conditional, localized and reweighted conformal methods on the cached predictions of the 12 in-domain cells (six random-split and six scaffold-split). Several are our own implementations or approximations of the published ideas, as stated in the table; they are included to test whether the support gradient survives methods designed for conditional coverage, not to rank those methods.
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Existing conditional conformal methods} on the same predictions (LAC, $\alpha=0.1$, CE; 12 in-domain cells (six random-split and six scaffold-split), 20 splits each). Low-support BBB$-$: range over cells of the seed-mean coverage in the lowest VAL Tanimoto tertile; high: mean over cells for the highest tertile; cells failing: cells whose 95\% interval for low-support coverage lies below 0.90; set size: mean over cells.}\label{tab:condbase}
+\resizebox{\linewidth}{!}{\input{generated/S_condbase}}
+\end{table}
+
+\textbf{Mechanism.} For every split, the mean predicted probability of the true class was computed by support tertile, separately for BBB$-$ and BBB$+$ test compounds (Table~\ref{tab:mech}). Three predictions were stated before the confirmatory seeds were examined: (P1) low-support BBB$+$ compounds are covered at target while low-support BBB$-$ compounds are not; (P2) the true-class probability falls with support more for BBB$-$ than for BBB$+$; (P3) in the low-support tertile, the mean predicted BBB$-$ probability is below the observed BBB$-$ fraction. P2 holds in \V{mech.p2.n} of 12 cells. P1 fails: low-support BBB$+$ coverage is \V{mech.covmajlow.min}--\V{mech.covmajlow.max}, and the lower end of its 95\% interval is at or above 0.88 (a tolerance of 0.02 below target, fixed in advance) in \V{mech.p1.nmajok} of 12 cells. P3 holds in \V{mech.p3.n} of 12 cells (\V{mech.p3.nb3db} of 6 on B3DB).
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{True-class probability and coverage by support} under class-conditional calibration (LAC, $\alpha=0.1$, CE; 20 splits). $\bar p_{\mathrm{true}}$: mean predicted probability of the true class in the highest and lowest support tertile; cov.: low-support coverage of minority and majority compounds; calib.\ gap: mean predicted minority probability minus observed minority fraction in the lowest tertile, with 95\% interval. Lower block: random forest on the additional tasks (Section~\ref{sec:general}).}\label{tab:mech}
+\resizebox{\linewidth}{!}{\input{generated/S_mechanism}}
+\end{table}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\linewidth]{supp_mechanism.pdf}
+\caption{\textbf{Mean predicted probability of the true class by support tertile} for minority (orange) and majority (blue) test compounds under each backbone (markers), LAC, CE, 20 splits. Right: random forest on the additional tasks (circles BACE, squares Tox21 SR-ARE, triangles ClinTox, random splits). The minority curve falls more steeply than the majority curve in every BBB cell; on Tox21 SR-ARE it also falls, yet the coverage gap is reversed (Proposition~\ref{prop:S-shared}(c)).}\label{fig:mech}
+\end{figure}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\linewidth]{supp_reliability.pdf}
+\caption{\textbf{Reliability by support tertile.} Observed BBB$-$ fraction against mean predicted BBB$-$ probability in fixed probability bins (at least 30 test appearances per point), pooled over backbones and 20 splits. On B3DB, low-support compounds (orange) are BBB$-$ more often than predicted at low predicted probability; on BBBP the pattern is inconsistent, as the support coefficient indicates.}\label{fig:rel}
+\end{figure}
+
+\textbf{Continuous support.} Over all BBB$-$ test appearances, the logistic slope of class-conditional coverage on maximal Tanimoto support is \V{sc.mond.slope.min}--\V{sc.mond.slope.max} log-odds per 0.1, with a split-bootstrap interval above zero in \V{sc.mond.npos} of 12 cells; under class $\times$ support it is \V{sc.mx.slope.min} to \V{sc.mx.slope.max} and its interval includes zero in most cells (Fig.~\ref{fig:curve}).
+
+\begin{figure}[h]\centering
+\includegraphics[width=\linewidth]{supp_support_curve.pdf}
+\caption{\textbf{BBB$-$ coverage as a function of maximal Tanimoto support} (LAC, $\alpha=0.1$, CE), pooled over 20 splits in fixed support bins with at least 20 appearances. Solid: class-conditional; dashed: class $\times$ support. Pooled intervals are optimistic because molecules recur across splits; inference uses the split bootstrap of the slope.}\label{fig:curve}
+\end{figure}
+
+\textbf{Calibration at a fixed score.} A logistic regression of the BBB$-$ label on the logit of the predicted BBB$-$ probability and support gives a support coefficient of \V{scal.b3db.coef.min} to \V{scal.b3db.coef.max} per 0.1 Tanimoto on B3DB, with intervals below zero in \V{scal.b3db.nneg} of 6 cells, and \V{scal.bbbp.coef.min} to \V{scal.bbbp.coef.max} on BBBP, where signs differ across backbones.
+
+\textbf{Can calibration data alone flag the failure?} Leave-one-out coverage of BBB$-$ calibration molecules in the lowest support tertile, computed without test data, correlates weakly with test low-support coverage across the \V{ca.nsplits} splits (Spearman \V{ca.rho}); as a per-split flag at 0.85 it has sensitivity \V{ca.sens} and specificity \V{ca.spec}. Aggregated over splits, the calibration-only flag agrees with the test outcome in \V{ca.cellagree} of 12 cells, and the sign of the high-minus-low gap agrees in a fraction \V{ca.signagree} of splits. Calibration data can therefore support an audit across repeated splits but not a decision for a single deployment (Fig.~\ref{fig:calaudit}).
+
+\begin{figure}[h]\centering
+\includegraphics[width=0.5\linewidth]{supp_cal_audit.pdf}
+\caption{\textbf{Calibration-only audit.} Leave-one-out coverage of low-support BBB$-$ calibration molecules against test low-support coverage, one point per split and backbone (240 points). Grey lines: flag threshold 0.85.}\label{fig:calaudit}
+\end{figure}
+
+% =====================================================================
+\section{Other tasks and the prior protocol (exploratory)}\label{sec:general}
+The same pipeline (random forest, CE, VAL tertile edges, seeds 100--119) was run on BACE, ClinTox and Tox21 SR-ARE from MoleculeNet~\cite{wu2018moleculenet}, with the minority label read from each dataset, and the random forest and graph convolutional network of Tursunbadalov and Tursunbadalov~\cite{tursunbadalov2026quiet} were rerun on their BBBP protocol (all parseable records, random 50/25/25 split, no VAL, so tertile edges come from CAL). Holm correction is applied within each block.
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Other imbalanced tasks and the prior BBBP protocol.} Minority coverage (LAC, $\alpha=0.1$, CE; mean over 20 splits); $n^{\mathrm{min}}_{\mathrm{cal}}$: minority calibration molecules per split; last two columns: paired gain of class $\times$ support over class-conditional calibration in low-support minority coverage, seed bootstrap interval and Holm $p$ within the block. ClinTox cells are dominated by infinite thresholds and are not interpretable.}\label{tab:general}
+\resizebox{\linewidth}{!}{\input{generated/S_generality}}
+\end{table}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\linewidth]{supp_generality.pdf}
+\caption{\textbf{Low- and high-support minority coverage on other tasks and under the prior BBBP protocol} (LAC, $\alpha=0.1$, CE, 20 splits). BACE and the prior protocol show the BBB pattern (low below high under class-conditional calibration, levelled by class $\times$ support); Tox21 SR-ARE shows the reverse; ClinTox is dominated by infinite thresholds.}\label{fig:gen}
+\end{figure}
+
+% =====================================================================
+\section{Persistent failures}\label{sec:persist}
+\textbf{Definitions} are given in the main text (Section~5). Table~\ref{tab:plist} lists every cross-architecture persistent failure under the strict definition, Fig.~\ref{fig:struct} shows their structures, and Table~\ref{tab:pdesc} gives descriptor contrasts under both definitions.
+
+\textbf{Curation findings.} Record numbers refer to the \texttt{NO.} column of the B3DB classification file; identifiers in brackets are those used in our code. (i) Record 3838 [B3DB:2544], labelled BBB$-$ (references R16, R10), is named rifampin but its SMILES encodes an unrelated difluoropyridine amide (PubChem CID 105381226); rifampin itself appears in records 1981, 5510 and 7390. (ii) Record 5692 [B3DB:3330], labelled BBB$-$ from a single reference (R23), is named phenylbutazone but drawn with a propyl chain; record 279, the correctly drawn butyl compound, is labelled BBB$+$ (logBB $-0.5$, 25 references). (iii) Record 5253 [B3DB:3001], cyclobenzaprine hydrochloride, labelled BBB$-$ from a single reference (R14), is drawn in a non-aromatic form that does not de-duplicate against record 1009, cyclobenzaprine, labelled BBB$+$ (logBB 1.06, three references); cyclobenzaprine is a centrally acting muscle relaxant. These are structural or record-level errors that can be checked from the file; they are distinct from disagreements between datasets about a correctly drawn compound, for which we do not decide which label is right.
+
+\textbf{Name-level screen.} \V{nc.nconflict.min}--\V{nc.nconflict.max} eligible BBB$-$ molecules per B3DB setting share a normalized compound name with a BBB$+$ record of the raw file. Among strict failures this holds for \V{nc.b3db/random.strict.nfail} (random) and \V{nc.b3db/scaffold.strict.nfail} (scaffold), \V{nc.b3db/random.strict.ratefail}\% and \V{nc.b3db/scaffold.strict.ratefail}\% against \V{nc.b3db/random.strict.raterest}\% and \V{nc.b3db/scaffold.strict.raterest}\% of other eligible molecules (Fisher $p=\V{nc.b3db/random.strict.p}$ and \V{nc.b3db/scaffold.strict.p}); under the majority rule \V{nc.b3db/random.majority.ratefail}\% and \V{nc.b3db/scaffold.majority.ratefail}\% ($p=\V{nc.b3db/random.majority.p}$, \V{nc.b3db/scaffold.majority.p}). Names are an imperfect key in both directions: in the raw B3DB file some compound names are attached to unrelated structures (for example, records named dihydroergotamine, polythiazide and demeclocycline), so a same-name match can join different compounds. This is therefore a screen rather than a verdict on any label. The names given for shared failures in Table~\ref{tab:plist} were checked against their structures; only the rifampin record is mismatched, and it is flagged.
+
+\textbf{Label audit.} Of \V{la.nshared} BBBP molecules found in B3DB by connectivity key (\V{la.overlap}\%), \V{la.ndis} carry different labels (\V{la.negpos} BBB$-$ in BBBP and BBB$+$ in B3DB; \V{la.posneg} the reverse). Among eligible BBBP test molecules that occur in B3DB, the majority-rule failure rate is higher for label conflicts on random splits (\V{la.bbbp/random.majority.fdis} of \V{la.bbbp/random.majority.ndis}; odds ratio \V{la.bbbp/random.majority.or}, Fisher $p=\V{la.bbbp/random.majority.p}$) and scaffold splits (\V{la.bbbp/scaffold.majority.fdis} of \V{la.bbbp/scaffold.majority.ndis}; \V{la.bbbp/scaffold.majority.or}, $p=\V{la.bbbp/scaffold.majority.p}$). None of the \V{la.b3db/random.majority.ndis} conflicting B3DB molecules is a failure.
+
+\textbf{Sensitivity without the three records.} Removing the three records from calibration and test and recomputing all thresholds gives \V{pfx.b3db/random.n_cross_arch} cross-architecture failures on B3DB random (null mean \V{pfx.b3db/random.null}) and \V{pfx.b3db/scaffold.n_cross_arch} on B3DB scaffold (null mean \V{pfx.b3db/scaffold.null}), compared with \V{pf.b3db/random.n_cross_arch} and \V{pf.b3db/scaffold.n_cross_arch} in the primary analysis; BBBP results are unaffected. The concordance conclusion is unchanged.
+
+\textbf{Concordance and appearance counts.} Table~\ref{tab:conc} compares the observed number of strict cross-architecture failures with the primary null (each backbone's persistence indicator permuted within strata of the number of appearances $k$) and with a covariate-stratified null that also permutes within support and TPSA tertiles, which absorbs agreement explained by those covariates. It also gives the distribution of $k$: a strict failure tested twice is weaker evidence than one tested five times.
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Cross-architecture concordance against two nulls} (10{,}000 permutations each) and appearance counts of strict failures. null$_k$: strata of $k$ (capped at 6); null$_{\mathrm{cov}}$: strata of $k\times$ support tertile $\times$ TPSA tertile.}\label{tab:conc}
+\resizebox{\linewidth}{!}{\input{generated/S_conc}}
+\end{table}
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Cross-architecture persistent BBB$-$ failures} (strict definition). $k$: number of splits in which the molecule was tested; support: mean maximal Tanimoto similarity to TRAIN; flag: label in the other dataset or curation finding.}\label{tab:plist}
+\resizebox{\linewidth}{!}{\input{generated/S_persist_list}}
+\end{table}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\linewidth]{supp_persistent_structures.png}
+\caption{\textbf{Structures of cross-architecture persistent BBB$-$ failures} (unique molecules, strict definition), with the settings in which each is persistent and dataset flags.}\label{fig:struct}
+\end{figure}
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Descriptor contrasts}, persistent versus other eligible BBB$-$ molecules (unique molecules). AUC: probability that a persistent molecule has the larger value. Holm over the four primary descriptors and the settings tested within each definition; tests require at least five molecules per group. Support is descriptive.}\label{tab:pdesc}
+\resizebox{\linewidth}{!}{\input{generated/S_persist_desc}}
+\end{table}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\linewidth]{supp_descriptors.pdf}
+\caption{\textbf{Descriptors of shared failures} (majority rule, which populates all five settings) against other eligible BBB$-$ molecules; unique molecules, boxes show quartiles. Holm-adjusted tests are in Table~\ref{tab:pdesc}.}\label{fig:desc}
+\end{figure}
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{TPSA association with being missed, adjusted for support.} Logistic regression of a miss under class-conditional calibration on standardized descriptors over all BBB$-$ test appearances; coefficient and 95\% interval from 400 bootstrap resamples of splits. Permutation $p$: TPSA permuted within support tertiles (500 permutations).}\label{tab:adj}
+\resizebox{\linewidth}{!}{\input{generated/S_adjust}}
+\end{table}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\linewidth]{fig_chemistry_b3db_scaffold.pdf}
+\caption{\textbf{Chemistry of the misses, B3DB scaffold splits.} (A, B) Every eligible BBB$-$ test molecule by TPSA and mean support, coloured by its miss rate (mean over the three backbones) under class-conditional (A) and class $\times$ support (B) calibration; circles: strict cross-architecture failures. (C) Strict failures selected by a fixed rule (lowest TPSA first, the three curation-error records excluded), each with the never-missed BBB$-$ molecule nearest in TPSA and support. Several controls are permanently charged; we did not test this pattern on independent data and report it only as a hypothesis.}\label{fig:chem}
+\end{figure}
+
+% =====================================================================
+\section{Screening decisions}\label{sec:screen}
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Decision metrics at $\alpha=0.1$}, mean over three backbones and 20 splits. Rejection baselines are matched per split to the deferral rate of class $\times$ support (C$\times$S); in the VAL-threshold variants the deferral rate and the rejection thresholds are set on VAL, so they are not matched on the test set.}\label{tab:screen}
+\resizebox{\linewidth}{!}{\input{generated/S_screen}}
+\end{table}
+
+\begin{table}[h]\centering\scriptsize
+\caption{\textbf{Class-conditional calibration plus a rejection filter} at $\alpha=0.1$, mean over three backbones and 20 splits. The filter defers, among the singleton calls of class-conditional calibration, the compounds with the lowest support (AD) or confidence until total deferral equals that of class $\times$ support on the same split (matched without test labels); VAL rows set the extra deferral and the cut-off on VAL. Where class-conditional calibration already defers more, no extra deferral is added.}\label{tab:calrej}
+\resizebox{\linewidth}{!}{\input{generated/S_calrej}}
+\end{table}
+
+% =====================================================================
+\section{Verification and reproducibility}\label{sec:verify}
+Each number in the main text is a macro written by \path{scripts/make_paper_numbers.py} together with its source file, filter and aggregation (\path{generated/numbers_provenance.csv}). \path{scripts/verify_paper_numbers.py}, which imports only NumPy, pandas, SciPy and RDKit and shares no code with the analysis pipeline, recomputes each value from the cached predictions with its own conformal quantile, stratum assignment, count-based merging rule, Wilcoxon and Holm procedures and logistic fit, and records whether each value was recomputed exactly, replicated with independent random draws within a stated tolerance, or cross-checked against per-split outputs. Persistent-failure results are recomputed by \path{scripts/verify_persistent_failures.py}. The analysis reproduces the per-split coverages of the evaluation pipeline exactly before any per-molecule result is computed. Exploratory results that depend on the pipeline's own randomization (random strata) or on implementations of published methods are cross-checked against per-split outputs rather than recomputed. Counts that depend on whether a bootstrap interval excludes zero are replicated with independent draws and may differ by the number of cells whose interval endpoint lies within 0.02 of zero; such counts are not used as firm results. In a few small splits a support tertile contains no BBB$-$ test molecule; that split contributes no value for the tertile, identically in the analysis and in the verifier. All analyses of the cached predictions were reproduced on a second computing platform with identical results; models retrained there for the additional tasks gave identical splits but slightly different predictions (a different RDKit release), with unchanged conclusions. Package versions are pinned in \path{requirements-lock.txt}. All code, data and commands are available in the public repository listed in the main text.
+
+\clearpage
+\bibliographystyle{abbrvnat}
+{\small\bibliography{references_final}}
+\end{document}

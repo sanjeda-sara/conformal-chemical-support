@@ -1,0 +1,9 @@
+setting,definition,n_in_other,n_disagree,failures_disagree,failures_agree,failure_rate_if_disagree,failure_rate_if_agree,fisher_odds_ratio,fisher_p
+b3db/random,strict,287,7,0,1,0.0,0.0035714285714285713,0.0,1.0
+b3db/random,majority,287,7,0,7,0.0,0.025,0.0,1.0
+b3db/scaffold,strict,285,7,0,1,0.0,0.0035971223021582736,0.0,1.0
+b3db/scaffold,majority,285,7,0,6,0.0,0.02158273381294964,0.0,1.0
+bbbp/random,strict,292,18,2,0,0.1111111111111111,0.0,inf,0.0036011862731252643
+bbbp/random,majority,292,18,3,8,0.16666666666666666,0.029197080291970802,6.65,0.023863192448999735
+bbbp/scaffold,strict,315,21,1,0,0.047619047619047616,0.0,inf,0.06666666666666667
+bbbp/scaffold,majority,315,21,3,6,0.14285714285714285,0.02040816326530612,8.0,0.01661116886022897

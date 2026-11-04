@@ -1,0 +1,6 @@
+# Item E34: imbalance handling in training (CE / wCE are in full.yaml).  Post-hoc logit
+# adjustment is evaluated in Stage B on the CE runs (method suffix _la), no retraining.
+stageB: {profile: full}
+blocks:
+  - {datasets: [bbbp, b3db], regimes: [random, scaffold], models: [gin], losses: [focal, os], n_seeds: 20, seed_start: 100}
+  - {datasets: [bbbp, b3db], regimes: [random, scaffold], models: [rf], losses: [os], n_seeds: 20, seed_start: 100}

@@ -1,0 +1,3 @@
+blocks:
+  - {datasets: [bbbp], regimes: [random, scaffold, cluster], models: [rf], losses: [ce, wce], n_seeds: 10}
+  - {datasets: [bbbp], regimes: [random, scaffold, cluster], models: [gin], losses: [ce, wce], n_seeds: 5}

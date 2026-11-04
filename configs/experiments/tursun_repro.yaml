@@ -1,0 +1,8 @@
+# Item F42/F43: head-to-head with Tursunbadalov & Tursunbadalov (arXiv 2607.06605).
+# Their protocol: random 50/25/25 train/cal/test, seeds 0-9, RF 500 trees on Morgan r=2 2048 bits,
+# GCN 32-64-64, frozen ChemBERTa-77M-MTR + logistic head; LAC and APS at alpha = 0.1.
+# bbbp_raw = every parseable BBBP record (2,039; their n).  bbbp = our curated 1,924 (for contrast).
+stageB: {profile: full}
+blocks:
+  - {datasets: [bbbp_raw, bbbp], regimes: [random5025], models: [rf, gcn], losses: [ce], n_seeds: 10, seed_start: 0}
+  - {datasets: [bbbp_raw], regimes: [random5025], models: [chemberta], losses: [ce], n_seeds: 10, seed_start: 0}

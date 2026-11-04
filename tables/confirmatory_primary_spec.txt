@@ -1,0 +1,15 @@
+Pre-specified PRIMARY inference family (frozen 2026-10-21, before the
+confirmatory Stage B was analysed).  Everything outside it is EXPLORATORY and is reported
+without multiplicity correction and labelled as such.
+
+  endpoint   E3 = low-support minority coverage (cov_min_bin0)
+  contrast   sabm - mondrian   (the paper's claim: support conditioning repairs the failure)
+  score      LAC        alpha  0.10        loss  CE
+  regimes    random and scaffold only (exchangeable / group-exchangeable); cluster and
+             transfer are empirical-only and never enter the primary family
+  cells      dataset x regime x backbone  ->  2 x 2 x 3 = 12 comparisons at most
+  correction Holm across all 36 (4 settings x 3 backbones x 3 contrasts), per the 2026-10-21 SAP amendment
+
+Secondary family (same correction, reported separately): E2 = set size, same cells.
+Rationale for the size: with 20 paired seeds the smallest attainable Wilcoxon p is ~1e-6, so a
+12-member family leaves ample room; the v1.2/v1.3 exploratory table of 600+ rows did not.

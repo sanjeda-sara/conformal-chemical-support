@@ -1,0 +1,9 @@
+base,posthoc,n_cells,max_abs_diff_low,max_abs_diff_set_size,max_abs_diff_cov_minority
+mondrian,mondrian_ts,12,0.0,0.0,0.0
+mondrian,mondrian_la,12,0.0,0.0,0.0
+mondrian_x,mondrian_x_ts,12,0.0,0.0,0.0
+mondrian_x,mondrian_x_la,12,0.0,0.0001724137931036207,0.0
+sabm,sabm_ts,12,0.0,0.0,0.0
+sabm,sabm_la,12,0.0,0.0001724137931036207,0.0
+marginal,marginal_ts,12,0.0,0.0006003430531733578,0.0
+marginal,marginal_la,12,0.3650457596737378,0.15034482758620715,0.19954069846279954

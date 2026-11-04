@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.DS_Store
+.venv*/
+catboost_info/
+logs/
+release_excluded/
+results/processed/full_v13_conformal.csv
+paper/latex/*.aux
+paper/latex/*.log
+paper/latex/*.out
+paper/latex/*.bbl
+paper/latex/*.blg
+paper/latex/*.fls
+paper/latex/*.fdb_latexmk
+paper/latex/*.synctex.gz

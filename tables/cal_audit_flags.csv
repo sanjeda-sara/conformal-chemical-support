@@ -1,0 +1,2 @@
+n_splits,spearman_split,spearman_p,mae_split,spearman_cell,flag_threshold,tp,fp,fn,tn,sensitivity,specificity,ppv,base_rate_test_fail,cell_agreement,split_gap_sign_cal_pos,split_gap_sign_test_pos,split_gap_sign_agree,n_cells
+240,0.10854687024939359,0.09338958891442227,0.0765685014344833,0.2447552447552448,0.85,68,63,54,55,0.5573770491803278,0.4661016949152542,0.5190839694656488,0.5083333333333333,10,0.9625,0.875,0.8458333333333333,12

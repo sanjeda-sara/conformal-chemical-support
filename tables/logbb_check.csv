@@ -1,0 +1,16 @@
+setting,group,n_molecules,n_with_logBB,median_logBB,frac_within_0.5_of_threshold,mw_p_vs_rest
+b3db/random,cross_arch_strict,10,1,-1.09,1.0,
+b3db/random,majority_all3,42,2,-1.2850000000000001,1.0,
+b3db/random,rest,1107,79,-1.4,0.5949367088607594,
+b3db/scaffold,cross_arch_strict,14,1,-1.89,0.0,
+b3db/scaffold,majority_all3,55,4,-1.395,0.75,
+b3db/scaffold,rest,1144,90,-1.38,0.6222222222222222,
+bbbp/random,cross_arch_strict,2,2,-0.3,1.0,
+bbbp/random,majority_all3,14,3,-0.5,1.0,
+bbbp/random,rest,354,36,-1.2650000000000001,0.6666666666666666,
+bbbp/scaffold,cross_arch_strict,1,1,-0.5,1.0,
+bbbp/scaffold,majority_all3,12,6,-1.07,0.6666666666666666,0.6660496348403191
+bbbp/scaffold,rest,374,36,-1.1,0.7777777777777778,
+bbbp→b3db/scaffold,cross_arch_strict,0,0,,,
+bbbp→b3db/scaffold,majority_all3,46,5,-1.39,0.8,0.924669238263365
+bbbp→b3db/scaffold,rest,1024,71,-1.4,0.6338028169014085,

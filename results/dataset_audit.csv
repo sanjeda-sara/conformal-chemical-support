@@ -1,0 +1,4 @@
+source,n_raw,n_unparseable,n_salt_stripped,n_rows_in_conflicting_duplicate_groups,n_conflicting_duplicate_groups,n_consistent_duplicates_removed,n_rows_in_stereo_families,n_rows_dropped_stereo_label_disagreement,n_stereo_variants_collapsed,n_final,n_pos_y1,n_neg_y0,minority_label,minority_frac,n_scaffolds,n_acyclic,dataset
+BBBP,2050,11,105,25,12,64,45,6,20,1924,1472,452,0,0.23492723492723494,1009,95,bbbp
+B3DB,7807,2,10,0,0,3,5272,429,3486,3887,2470,1417,0,0.36454849498327757,2074,228,b3db
+B3DB_ext,175,0,0,0,0,0,22,0,14,161,157,4,0,0.024844720496894408,103,10,b3db_external

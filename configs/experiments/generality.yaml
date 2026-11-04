@@ -1,0 +1,5 @@
+# D2 (2026-10-31): generality of the masked support failure beyond BBB.  EXPLORATORY.
+# RF only, CE, confirmatory seeds 100-119.  Minority label read from each dataset's audit (y=1 here).
+# Stage A only; analysed by scripts/run_generality.py (no Stage B needed).
+blocks:
+  - {datasets: [bace, clintox, tox21_sr_are], regimes: [random, scaffold], models: [rf], losses: [ce], n_seeds: 20, seed_start: 100}

@@ -1,0 +1,51 @@
+% Shared preamble for main.tex and appendix.tex
+% RECOMB 2027 CFP: PDF, Letter, >= 10 pt, 1-inch margins, 10 pages incl. figures/tables/captions;
+% extra title page allowed; bibliography not counted; appendix as separate PDF, no limit.
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\IfFileExists{lmodern.sty}{\usepackage[T1]{fontenc}\usepackage{lmodern}\usepackage{microtype}}{\usepackage[expansion=false]{microtype}}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs,longtable,multirow,array}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,backgrounds}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=green!40!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{url}
+
+\captionsetup{font=small,labelfont=bf}
+\setlist{nosep,leftmargin=*}
+
+% ---- draft status colours (remove \pilot and \result before submission) ----
+\definecolor{pilotc}{RGB}{214,110,0}
+\newcommand{\pilot}[1]{\textcolor{pilotc}{#1}}            % pilot number, seeds 0-9: replace
+\newcommand{\result}[1]{\textcolor{red}{[#1]}}             % pending confirmatory number
+\newcommand{\todo}[1]{\textcolor{blue}{[TODO: #1]}}
+\newcommand{\chk}[1]{\textcolor{magenta}{[CHECK: #1]}}   % needs advisor / verification
+
+% ---- maths ----
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\cov}{\mathrm{cov}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Beta}{\mathrm{Beta}}
+\newcommand{\nreq}{n_{\mathrm{req}}}
+\newcommand{\Dcal}{\mathcal{D}_{\mathrm{cal}}}
+\newcommand{\bbbm}{BBB$-$}
+\newcommand{\bbbp}{BBB$+$}
+\newcommand{\SABM}{\textsc{SABM}}

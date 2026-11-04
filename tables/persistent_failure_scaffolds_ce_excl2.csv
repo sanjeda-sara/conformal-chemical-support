@@ -1,0 +1,26 @@
+setting,scaffold,n_bbbneg_eligible,n_cross_arch,frac_of_scaffold,share_of_all_cross_arch,fisher_p_enrichment,example_names
+b3db/random,C(=Cc1ccccc1)CNCc1cccc2ccccc12,1,1,1.0,0.1,,naftifine
+b3db/random,C=C1C=c2ccccc2=Cc2ccccc21,1,1,1.0,0.1,,cyclobenzaprine hydrochloride
+b3db/random,O=C(NC1CCCNC1)c1ccccc1,1,1,1.0,0.1,,troxipide
+b3db/random,O=C1C=CC(=O)c2ccccc21,3,1,0.3333333333333333,0.1,0.02590544400410195,menadione
+b3db/random,O=c1cccc2n1CC1CNCC2C1,1,1,1.0,0.1,,cytisine
+b3db/random,c1ccc(CNC2CCCCC2)cc1,2,1,0.5,0.1,,bromhexine
+b3db/random,c1ccc(N2CCC3(CCNCC3)CC2)cc1,1,1,1.0,0.1,,"4-(3,9-diazaspiro[5.5]undecan-3-yl)benzonitrile"
+b3db/random,c1ccc(N2CCN(CCc3nnc4n3CCCC4)CC2)cc1,1,1,1.0,0.1,,dapiprazole
+b3db/random,c1ccc2c(c1)CCNC2CC1CCN2CCc3ccccc3C2C1,1,1,1.0,0.1,,emetine hydrochloride
+b3db/random,c1ccc2c(c1)CCc1cccnc1C2=C1CCNCC1,1,1,1.0,0.1,,desloratadine
+b3db/scaffold,(acyclic),49,1,0.02040816326530612,0.08333333333333333,0.39585104547200556,acetohydroxamic acid
+b3db/scaffold,C(=Cc1ccccc1)CNCc1cccc2ccccc12,1,1,1.0,0.08333333333333333,,naftifine
+b3db/scaffold,C1CNCCN1,3,1,0.3333333333333333,0.08333333333333333,0.029799348288859318,diethylcarbamazine citrate
+b3db/scaffold,C=C1C=c2ccccc2=Cc2ccccc21,1,1,1.0,0.08333333333333333,,cyclobenzaprine hydrochloride
+b3db/scaffold,O=S1(=O)NC=Nc2ccccc21,1,1,1.0,0.08333333333333333,,diazoxide
+b3db/scaffold,c1ccc(CN2CCc3sccc3C2)cc1,2,1,0.5,0.08333333333333333,,ticlopidine hydrochloride
+b3db/scaffold,c1ccc(N2CCC3(CCNCC3)CC2)cc1,1,1,1.0,0.08333333333333333,,"4-(3,9-diazaspiro[5.5]undecan-3-yl)benzonitrile"
+b3db/scaffold,c1ccc(N2CCN(CCc3nnc4n3CCCC4)CC2)cc1,1,1,1.0,0.08333333333333333,,dapiprazole
+b3db/scaffold,c1ccc(N2CCNCC2)cc1,1,1,1.0,0.08333333333333333,,dropropizine
+b3db/scaffold,c1ccc(NC2=NCCN2)cc1,3,1,0.3333333333333333,0.08333333333333333,0.029799348288859318,1848-75-5
+b3db/scaffold,c1ccc2c(c1)CCNC2CC1CCN2CCc3ccccc3C2C1,1,1,1.0,0.08333333333333333,,emetine hydrochloride
+b3db/scaffold,c1ccc2c(c1)CCc1cccnc1C2=C1CCNCC1,1,1,1.0,0.08333333333333333,,desloratadine
+bbbp/random,O=C1CC(=O)N(c2ccccc2)N1c1ccccc1,1,1,1.0,0.5,,Phenylbutazone
+bbbp/random,O=C1CC(=O)NC(=S)N1,1,1,1.0,0.5,,Thiopental
+bbbp/scaffold,O=C1CC(=O)N(c2ccccc2)N1c1ccccc1,1,1,1.0,1.0,,Phenylbutazone

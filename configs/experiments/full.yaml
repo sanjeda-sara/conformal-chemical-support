@@ -1,0 +1,7 @@
+# Confirmatory RECOMB grid (run on GPU/HPC; see slurm/).  FRESH seeds 100-119 that were
+# never used while designing the method (pilot used seeds 0-9).  Do not change design
+# constants (bins=3, n_req rule, RAPS lambda) after looking at these results.
+# n_req rule frozen 2026-10-09: eps = alpha, delta = 0.10 (22/11/5); sabm_abs05 = original eps = 0.05.
+blocks:
+  - {datasets: [bbbp, b3db], regimes: [random, scaffold, cluster], models: [rf, gin, chemprop], losses: [ce, wce], n_seeds: 20, seed_start: 100}
+  - {datasets: [bbbp], external: b3db, regimes: [scaffold], models: [rf, gin, chemprop], losses: [ce, wce], n_seeds: 20, seed_start: 100}

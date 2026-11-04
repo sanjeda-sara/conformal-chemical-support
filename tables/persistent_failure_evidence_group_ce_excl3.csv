@@ -1,0 +1,4 @@
+setting,n_persistent,persistent_no_logBB_record,rest_no_logBB_record,n_rest,frac_persistent_no_logBB,frac_rest_no_logBB,median_nref_persistent,median_nref_rest,fisher_p_two_sided
+b3db/random,9,8,1059,1139,0.8888888888888888,0.9297629499561019,1.0,2.0,0.48362692900290655
+b3db/scaffold,12,11,1091,1184,0.9166666666666666,0.9214527027027027,2.5,1.0,1.0
+bbbp→b3db/scaffold,0,0,991,1067,0.0,0.9287722586691659,,1.0,

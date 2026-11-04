@@ -1,0 +1,6 @@
+# Item D26: is the hidden support failure BBB-specific?  Imbalanced MoleculeNet tasks used by
+# Tursunbadalov (BACE, ClinTox CT_TOX, Tox21 SR-ARE).  Minority = y = 1 (active/toxic) here.
+# Fresh confirmatory seeds 100-119.  Chemprop doubles the cost; drop it first if time is short.
+stageB: {profile: full}
+blocks:
+  - {datasets: [bace, clintox, tox21_sr_are], regimes: [random, scaffold], models: [rf, chemprop], losses: [ce], n_seeds: 20, seed_start: 100}
