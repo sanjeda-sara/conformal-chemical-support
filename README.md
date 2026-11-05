@@ -1,108 +1,102 @@
-# recomb2027-bbb-conformal
+# Class-conditional conformal prediction masks chemical-support undercoverage in BBB screening
 
-Support-aware class-conditional conformal prediction for imbalanced molecular screening, with blood–brain barrier (BBB) permeability as the case study.
+Code, data and outputs for the RECOMB 2027 submission by Sanjeda Sara Jennifer and Niloofar Yousefi
+(University of Central Florida).
 
-This is the working repository for the RECOMB 2027 submission. It grew out of the MoML 2026 workshop paper, which is preserved unchanged in `legacy_moml2026/`.
+Class-conditional (Mondrian) conformal calibration restores coverage of the minority class (BBB−) on average, but
+leaves BBB− compounds with low Tanimoto similarity to the training set under-covered. This repository reproduces
+every number, table and figure of the paper and its supplement from the cached predictions, and retrains every
+model from scratch if wanted.
 
-Start with:
-- `docs/PROJECT_STATUS.md`: what is done, what was found, and the go/no-go assessment.
-- `docs/DATA_AUDIT.md`: the 23-item audit of the MoML code and the BBBP/B3DB data audit.
-- `docs/RESEARCH_GAP.md`: literature position (53-paper matrix in `docs/RELATED_WORK_MATRIX.csv`).
-- `docs/THEORY_NOTES.md` and `docs/METHOD_SPECIFICATION.md`.
-- `paper/recomb2027_outline.md`, `paper/abstract_candidate.md` and `paper/contribution_candidates.md`.
+## What is here
+
+| Path | Contents |
+|---|---|
+| `src/bbbcp/` | Library: data curation, label-free splits, models (ECFP4 random forest, GIN, Chemprop), calibrators |
+| `scripts/` | One script per analysis, table or figure (list below) |
+| `configs/experiments/` | Experiment grids; `full.yaml` is the confirmatory grid (seeds 100-119) |
+| `data/raw/` | BBBP (MoleculeNet) and B3DB (CC0) as downloaded |
+| `results/raw/` | Cached predictions for VAL, CAL and TEST, one file per dataset, split regime, model and seed (100-119) |
+| `results/processed/` | Curated datasets; Stage B per-seed calibration results (`full_v13_conformal.csv.gz`) |
+| `tables/`, `figures/` | Analysis outputs used by the paper |
+| `paper/latex/` | `main.tex`, `supplement.tex`; `generated/` holds every number as a macro, with provenance |
+| `tests/` | Unit tests (split integrity, no leakage, conformal quantiles, coverage on synthetic data) |
+
+Only the confirmatory seeds 100-119 are used in the paper. Pilot runs (seeds 0-9) used to design the study are not
+included.
 
 ## Install
 
+Python 3.12. Exact versions are pinned in `requirements-lock.txt` (RDKit 2026.03.6, scikit-learn 1.9.1,
+PyTorch 2.14.1, torch-geometric 2.8.0, Chemprop 2.3.1).
+
 ```bash
-python -m venv .venv && source .venv/bin/activate      # or: conda env create -f environment.yml
-pip install -r requirements.txt && pip install -e .
+python3.12 -m venv .venv && source .venv/bin/activate
+pip install -r requirements-lock.txt && pip install -e .
+export PYTHONPATH=$PWD/src          # run every command from the repository root
 ```
 
-The code runs on CPU, CUDA or Apple MPS. GIN uses `device_auto()`, and Chemprop uses `accelerator="auto"`.
+## Check the paper's numbers (minutes, no training)
 
-## Commands
-
-| What | Command | Time (2-core CPU) |
-|---|---|---|
-| Unit and integrity tests | `python -m pytest -q` | ~3 min |
-| Smoke test | `bash scripts/run_smoke_test.sh` | ~1 min |
-| Data audit tables | `python scripts/audit_datasets.py` | ~1 min |
-| BBBP grid | `bash scripts/run_bbbp.sh` | ~45 min |
-| B3DB + BBBP→B3DB transfer | `bash scripts/run_b3db.sh` | ~40 min |
-| Executed pilot (core benchmark) | `bash scripts/run_core_benchmarks.sh` | ~2.5 h |
-| Confirmatory grid (fresh seeds 100–119) | `sbatch --array=0-839%40 slurm/run_full_array.sbatch`, then `python scripts/run_grid.py configs/experiments/full.yaml --stage B` | HPC |
-| Ablations on cached predictions | `bash scripts/run_ablations.sh` | ~40 min |
-| Tables / figures from cached results | `make tables` / `make figures` | ~1–2 min |
-
-**Figure quality.** Every figure is written as a 300-dpi PNG and a vector PDF with embedded fonts. Use the PDFs in the paper. To change this, set environment variables before `make figures`: `BBBCP_FIG_DPI=600 BBBCP_FIG_FORMATS=png,pdf,svg make figures`. No retraining is needed; the figures are rebuilt from the cached results in `results/`.
-
-## Layout
-
-```
-src/bbbcp/
-  chemistry/   standardize.py (salt strip, uncharge, InChIKey, scaffold); fingerprints.py (ECFP4, Tanimoto, descriptors)
-  data/        datasets.py (BBBP, B3DB loaders + audit); splits.py (label-free random / balanced scaffold / cluster holdout)
-  models/      gin.py (refactored MoML GIN, correct MC dropout); baselines.py (ECFP-RF, Chemprop v2)
-  conformal/   scores.py (LAC, APS, RAPS); calibrators.py (marginal, Mondrian, Mondrian-PAC, class×stratum, SABM, weighted)
-  metrics/     classification + prediction-set metrics, screening cost
-  stats/       Wilson / Clopper-Pearson, paired bootstrap, Wilcoxon, Holm, scaffold-cluster bootstrap
-  pipeline.py  Stage A: split -> fit -> cache predictions + provenance registry
-  evaluate.py  Stage B: all scores x calibrators x alpha on cached predictions; calibration-support sweep
-configs/experiments/   pilot_{rf,gin,chemprop}.yaml (executed), full.yaml (confirmatory), bbbp.yaml, b3db.yaml
-scripts/               run_*.sh / run_*.py, analyze_pilot.py, run_biology.py, make_paper_figures.py
-tests/                 split integrity, scaffold disjointness, leakage, quantiles, APS/RAPS, synthetic coverage
-results/raw/           cached predictions per run (npz)       results/manifests/registry.jsonl  provenance per run
-results/processed/     long-format conformal results           tables/  figures/  docs/  paper/
-legacy_moml2026/       original MoML project (unchanged, for provenance)
+```bash
+python scripts/make_paper_numbers.py        # every number in the paper, as LaTeX macros with provenance
+python scripts/make_supplement_tables.py    # supplementary tables
+python scripts/verify_paper_numbers.py      # independent recomputation from the caches; must end in PASS
+python scripts/check_cited_keys.py          # every number cited in main.tex and supplement.tex is verified
 ```
 
-## Status tags used in the docs
+`verify_paper_numbers.py` shares no code with the analysis pipeline: it re-implements the conformal thresholds,
+support strata and statistics and recomputes each number from the cached predictions.
+`paper/latex/generated/numbers_provenance.csv` records the source table and filter of every number.
 
-- **[IMPLEMENTED]**: the code exists and has been inspected.
-- **[TESTED]**: a test passed.
-- **[EXECUTED]**: the experiment was run.
-- **[VERIFIED RESULT]**: the output was inspected and sanity-checked.
-- **[PLANNED]**: not yet done.
+## Reproduce tables and figures from the caches
 
-No number in `docs/` or `paper/` comes from the legacy MoML pipeline unless it is explicitly labelled legacy.
+| Paper item | Command |
+|---|---|
+| Table 1, Fig. 2 and the headline numbers | `python scripts/make_paper_numbers.py`, `python scripts/make_main_figures.py` |
+| Fig. 1 (editable draw.io source and PDF) | `python scripts/make_fig1_overview.py` |
+| Figs. 3 and 4 | `python scripts/make_main_figures.py` (after the analyses below) |
+| Table S3 (predictive performance) | `python scripts/run_classifier_metrics.py` |
+| Tables S4-S8, S11 | `python scripts/make_supplement_tables.py` |
+| Table S9 (same-cell-size random strata) | `python scripts/run_random_strata_contrast.py` |
+| Table S10, Fig. S1 (common grid, feasibility) | `python scripts/run_common_grid.py --workers 4` |
+| Table S12 (existing conditional methods) | `python scripts/run_conditional_baselines.py` |
+| Table S13, Fig. S2 (mechanism) | `python scripts/run_mechanism.py` |
+| Fig. S3 (reliability by support) | `python scripts/run_support_calibration.py` |
+| Fig. S4 (coverage against support) | `python scripts/run_support_curve.py` |
+| Fig. S5 (calibration-set audit) | `python scripts/run_cal_audit.py` |
+| Table S14, Fig. S6 (other tasks, prior protocol) | `python scripts/run_generality.py --runs bace/random bace/scaffold clintox/random clintox/scaffold tox21_sr_are/random tox21_sr_are/scaffold --models rf --tag generality` and `python scripts/run_generality.py --runs bbbp_raw/random5025 --models rf gcn --tag tursun_confirm` |
+| Tables S16-S17, Fig. 3 (shared failures) | `python scripts/run_persistent_failures.py`; without the three curation-error records: `python scripts/run_persistent_failures.py --exclude-ids B3DB:2544 B3DB:3330 B3DB:3001 --stageb none --tag _excl3` |
+| Table S15 (concordance against a covariate-stratified null) | `python scripts/run_concordance_conditional.py` |
+| Table S18 (TPSA association adjusted for support) | `for m in rf gin chemprop; do python scripts/run_descriptor_adjustment.py --runs "results/raw/{bbbp,b3db}/{random,scaffold}/${m}_ce/seed1??.npz" --tag _confirmatory_$m; done` |
+| Fig. S7 (structures), Fig. S9 (chemistry) | `python scripts/make_figS_structures.py`, `python scripts/make_fig_chemistry.py` |
+| Table S19 (screening decisions) | `python scripts/run_screening_utility.py` |
+| Table S20, Fig. 4 (calibration plus rejection filters) | `python scripts/run_calibrated_rejection.py` |
+| Label, name and logBB checks | `python scripts/run_label_audit.py`, `python scripts/run_name_audit.py`, `python scripts/run_logbb_check.py` |
+| Molecule and scaffold bootstrap | `python scripts/run_cluster_bootstrap.py` |
+| Supplementary Figs. S1-S3, S5, S6, S8 | `python scripts/make_supp_figures.py` |
+| Build the PDFs | `cd paper/latex && latexmk -pdf main.tex supplement.tex` |
 
-## Licence
+Analysis scripts write CSV files to `tables/`; `make_supplement_tables.py`, `make_paper_numbers.py` and the figure
+scripts turn them into the paper's tables, numbers and figures.
 
-Code: MIT. B3DB data: CC0-1.0. BBBP: MoleculeNet distribution.
+## Retrain from scratch (GPU recommended for GIN and Chemprop)
 
-## v1.4 (2026-10-21, after an external PC-style review)
+```bash
+python scripts/run_grid.py configs/experiments/full.yaml            # BBBP, B3DB, transfer, cluster; seeds 100-119
+python scripts/run_grid.py configs/experiments/generality.yaml --stage A
+python scripts/run_grid.py configs/experiments/tursun_confirm.yaml --stage A
+```
 
-- **Read first: `docs/REVIEW_RESPONSE_2026-10-21.md`.** Every falsifiable claim in that review was checked against the data before acting on it.
-- **The headline changed.** At the default operating point (3 support bins, full calibration, alpha = 0.1) SABM is bit-identical to a fixed class x support Mondrian in 5 of 7 settings: the coverage gain belongs to the textbook taxonomy, not to adaptive merging. SABM is now presented as a robustness mechanism for the regime where a partition outruns its calibration data, with the operating range measured (`scripts/run_adaptive_vs_fixed.py`).
-- **Reproducibility fix.** Derived `*.pkl` caches are no longer load-bearing: an unreadable or version-incompatible cache rebuilds from `data/raw/`. Pandas pickles are not portable across major versions, which is why an outside reviewer saw 9 test failures. `rm -f results/processed/*.pkl && python -m pytest -q` now passes in 45 s.
-- **Statistics corrected.** A pre-specified primary Holm family replaces the 48-method-per-cell design, which could not reject at any effect size with 10 seeds.
-- **New analysis.** The TPSA/HBD reliability disparity survives adjustment for chemical support (stratified, adjusted logistic, and within-stratum permutation, p < 0.005 in all four exchangeable settings).
-- Tests: 56 passing, with no cached artifacts required.
+Splits depend only on the data and the seed, so they reproduce exactly. Model predictions can differ in the last
+digits across platforms and RDKit versions; the conclusions do not.
 
-## v1.3 (2026-10-21)
+## Data
 
-- Every item of the Oct 21 request list was audited, and most are now implemented: **`docs/ITEM_AUDIT_2026-10-21.md`**.
-- What to run, in which order, day by day to Nov 4: **`docs/RUNBOOK_2026-10-21.md`**. VS Code tasks 0–14 run each step.
-- Stage B defaults to the `full` profile (every baseline, ablation, variant and metric). `--profile v12` reproduces v1.2 exactly; a unit test checks that the unchanged v1.2 methods give identical numbers.
-- New configs: `tursun_repro.yaml`, `other_tasks.yaml`, `backbones.yaml`, `training_ablations.yaml`, `extra_regimes.yaml`.
-- Tests: 59 passing, from an empty cache.
+B3DB (Meng et al., Scientific Data 2021) is distributed under CC0. BBBP (Martins et al., 2012) is distributed
+through MoleculeNet. Curation (standardization, de-duplication, stereoisomer collapse, cross-dataset overlap audit)
+is in `src/bbbcp/data/` and is reported in the supplement.
 
-## v1.2 (2026-10-09)
+## License
 
-- **n_req rule frozen** before the confirmatory seeds: ε = α, δ = 0.10 (n_req = 22 / 11 / 5). The original rule is kept as `sabm_abs05`. Tag the commit `freeze-nreq-2026-10-09` before running seeds 100–119.
-- `pyproject.toml` now says `requires-python >= 3.9`.
-- `docs/RESEARCH_DESIGN.md`: research questions, hypotheses, theorems, baselines, experiments, ablations, statistics, compute and acceptance strategy in one place (pre-registration).
-- `scripts/run_simulation_s1.py`: synthetic simulation S1 (executed; `tables/s1_simulation_panel*.csv`, `figures/s1_simulation.*`).
-- `paper/latex/`: RECOMB-format draft (`main.pdf`) and generated appendix (`appendix.pdf`). See `paper/latex/README.md`.
-- No GPU needed: the 840-job confirmatory grid is about 17 CPU core-hours.
-
-### Local setup on a Mac
-
-Chemprop v2 has no Python 3.9 release, and the pinned versions in `requirements.txt` need Python ≥ 3.11. The core code (RF, conformal methods, tests) still runs on 3.9, but the full grid needs **Python 3.12**. `uv` installs it per user, with no admin rights and no global pip:
-
-    curl -LsSf https://astral.sh/uv/install.sh | sh        # one-time; restart the terminal afterwards
-    uv venv --python 3.12 .venv312
-    source .venv312/bin/activate
-    uv pip install -r requirements.txt
-    export PYTHONPATH=$PWD/src
-    python -m pytest -q                                     # expect 36 passed
+MIT (see `LICENSE`).

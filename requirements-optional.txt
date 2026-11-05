@@ -1,3 +1,0 @@
-# Optional backbones (v1.3).  Install into the same .venv312:
-#   uv pip install -r requirements-optional.txt
-transformers>=4.44,<5   # chemberta / molformer (frozen chemical language models)
