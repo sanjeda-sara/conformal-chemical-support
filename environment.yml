@@ -4,5 +4,5 @@ dependencies:
   - python=3.12
   - pip
   - pip:
-      - -r requirements.txt
+      - -r requirements-lock.txt
       - -e .
